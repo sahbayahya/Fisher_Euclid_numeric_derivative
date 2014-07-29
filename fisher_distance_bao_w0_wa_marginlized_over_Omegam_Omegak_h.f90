@@ -9,7 +9,7 @@ PROGRAM Fisher_Distance
   double precision, dimension(2)   :: der
   double precision, dimension(2,2) :: cov,fis,fistot
   double precision, dimension(6,6) :: fis3x3, fis6x6
-  integer,          dimension(2)   :: work
+  integer, dimension(2)   :: work
   double precision :: sigma0=12.4d0*0.817d0/0.9d0 ! non-linearity scale in units of h Mpc^-1, rescaled by WMAP5's sigma8 value (0.817)
   double precision :: BAO_AMP=0.5817d0 ! A_0 in Seo&Eisenstein
   double precision :: kmax_ov_h,k0_ov_h, kmin_ov_h, k0_new, k_new! h Mpc^-1
@@ -55,7 +55,7 @@ PROGRAM Fisher_Distance
   CALL setup_da       ! tabulate the angular diameter distance
   ! ask for survey specific parameters
 !==============Enter the File name ================================== 
-!filename = 'number_sax3_7point3_mJy_SKANew_S3.txt'
+!filename = 'input_Fisher_bao_3_rms_s30k.txt'
 !filename='number_7point3_z=1.txt'!
 filename= 'number_EuclidmJy_ref.txt'
 open(2,file=filename,status='unknown')
@@ -77,8 +77,8 @@ open(2,file=filename,status='unknown')
   nbins=0    ! initialize the number of bins
   !=========== Loop over redshift bins =======================================
   do ibin=1,100
-     read(2,*,end=10)area,z ,dndz,bias,kmax_ov_h,kmin_ov_h,delta_v, Vsurvey ! uncomment for Euclid
-    ! read(2,*,end=10)area,z ,dndz,bias,kmax_ov_h ,delta_v, Vsurvey ! Uncomment for SKA
+     read(2,*,end=10)z ,dndz,bias,kmax_ov_h,kmin_ov_h,delta_v, Vsurvey ! uncomment for Euclid
+  !   read(2,*,end=10)area,z ,dndz,bias,kmax_ov_h ,delta_v, Vsurvey ! Uncomment for SKA
      nbins=nbins+1
    ! CALL volume(zmin,zmax,area,Vsurvey)
     print*,  Vsurvey
@@ -88,7 +88,7 @@ open(2,file=filename,status='unknown')
      Ngl = (dndz * Vsurvey ) ! for Euclid
      Ntot=Ntot + Ngl 
      ngal=dndz  !  Uncomment for  Euclid
-    !ngal=dndz/((3.14159d0/180d0)**2*dvdz(z)) ! Uncomment for SKA
+  !  ngal=dndz/((3.14159d0/180d0)**2*dvdz(z)) ! Uncomment for SKA
      Vtot=Vtot+Vsurvey ! h^-3 Mpc^3.
      print*, 'da = ', da(z)
      print*, '1/h(z) = ', one_over_h(z)
@@ -101,7 +101,6 @@ open(2,file=filename,status='unknown')
      !==================Test the growth =================================
        !open(101,file='test_all_terms_Euclid.txt' ,status='unknown')
    	!write(101,*) z,ngal, (1d0+dgdlna(z)/g(z)), g(z)/(1d0+z)
-   	!write(101,*)  z, Vsurvey, ngal, sigma_para, sigma_perp, sigma_z, g(z)/g(zin), bias, beta, one_over_h(z) ,da(z)
    	!write(101,*) z, Vsurvey, ngal, bias, beta
    !=================  computing the Fisher matrix... =================================
       !n1 =1
@@ -113,24 +112,8 @@ open(2,file=filename,status='unknown')
      !================ loop over k ===================================
      do while (k_ov_h <=kmax_ov_h)
         read(11,*)k_ov_h, fbao, dfbao,pk_ref
-        !dlnk=dlog(k_ov_h)-dlog(k0_ov_h) ! uncomment
+        !dlnk=dlog(k_ov_h)-dlog(k0_ov_h) ! uncomment for widder bins
         !print*, 'dlnk', dlnk 
-   !===============================================================
-  !open(unit =1,file='bao_wiggles_powerspectrum.txt',status = 'unknown',action = 'read',  iostat=status)
-   ! If(status == 0) then 
-   ! do while(.true.)
-   !    read(1,*,iostat=status)  k_ov_h(n1), fbao(n1), pk_ref(n1)
-   !    !print*, n1 , k_full(n1), fbao(n1), pk_ref(n1)
-  !     IF ( status < 0 ) EXIT
-  !     n1 = n1 + 1
-  ! enddo    
- !!  endif
- !  n1 = n1-1
- !  close(unit=1)
- ! print*, n1 , k_full(n1), fbao(n1), pk_ref(n1)
-!  CALL derivation_Mikrom(n1,k_ov_h, fbao, dfbao)
-!  do j=1,n1
-  	!write(*,*) j, k_ov_h(j), fbao(j), dfbao(j) 
         !===========================================================
          k0_new=6.8492999999999996E-005 
          k_new =9.5589999999999998E-005
@@ -161,18 +144,6 @@ open(2,file=filename,status='unknown')
            do i=1,npara
                fistest=factor*Vsurvey*(ngal*pk/(1d0+ngal*pk))**2d0
                fis(i,:)= fis(i,:) +factor* wkmu*wdamp*der(i)*der(:)*dmu 
-       !    wkmu=Vsurvey*(ngal*p01/(1d0+ngal*pk))**2d0
-        !   wdamp=exp(-(k_ov_h*sigma_z)**2d0*mu2) & 
-        !        *exp(-(k_ov_h*sigma_perp)**2d0*(1d0-mu**2d0)) & 
-        !        *exp(-(k_ov_h*sigma_para)**2d0*mu**2d0) &
-        !        *exp(-2d0*(k_ov_h*sigma_silk)**1.4d0)
-        !              print*, wdamp     
-        !   der(1)=(1d0-mu2) ! dlnPkdlnDa
-        !   der(2)=(-mu2) ! dlnPkdlnH
-        !   do i=1,npara
-         !     ! fistest=factor* Vsurvey*(ngal*p01/(1d0+ngal*p01))**2d0
-         !      fis(i,:)= fis(i,:) + factor*wkmu*der(i)*der(:)*dmu &
-         !       *(8d0*3.1415926535d0**2d0 *BAO_AMP**2d0)*wdamp ! factor*wkmu!
            enddo
            mu=mu+dmu
         enddo
@@ -188,12 +159,6 @@ open(2,file=filename,status='unknown')
     	
     !	open(100,file='cosmic_variance_test' ,status='unknown')
     ! 	write(100,*) z , ((1d0/P02)*dvdz(z) ), (dndz*((3.14159d0/180d0)**2*dvdz(z)))
-     	
-     !open(17,file='Pb_vs_k_testz=1.txt' ,status='unknown')
-     ! write(17,*) k_ov_h , Pb
-      
-     ! open(150,file='wdamps_testz=1.txt' ,status='unknown')
-    ! write(150,*) k_ov_h , wdamp_perp, wdamp_para, wdamp_silk, wdamp_factor, wdamp_sinterm
    !======================================================================
     k0_ov_h=k_ov_h
     enddo
@@ -213,8 +178,6 @@ open(2,file=filename,status='unknown')
       print'(1A7,1F8.5)','g(z) =',g(z)
       print'(1A7,1F8.5)','f(z) =',1d0+dgdlna(z)/g(z)
       print'(1A7,1F8.5,1A9)','sigz =',sigma_z,' h^-1 Mpc'
-      print'(1A7,1F8.5,1A9)','spara=',sigma_para,' h^-1 Mpc'
-      print'(1A7,1F8.5,1A9)','sperp=',sigma_perp,' h^-1 Mpc'
       print'(1A7,1F8.5,1A9)','kmin =',kmin_ov_h,' h Mpc^-1'
       print'(1A7,1F8.5,1A9)','kmax =',kmax_ov_h,' h Mpc^-1'
       CALL report_result(z,bias,npara,fis)
@@ -228,7 +191,7 @@ open(2,file=filename,status='unknown')
      write(*,*),'=== combined ==='
      write(*,*),'Vsur =',Vtot,' h^-3 Mpc^3'
     ! write(*,*), 'ngal =',ngal,' 10^-3 h^3 Mpc^-3'
-     write(*,*), 'N(z)=',Ngl
+     write(*,*), 'N(z)=',Ntot
 !    CALL report_result(z, bias,npara,fistot)
   endif
   print*,''
@@ -265,7 +228,7 @@ SUBROUTINE report_result(z,bias,npara,fis)
  !   write(12,*) 'z',  'fis(1,1)', 'fis(1,2)', 'fis(2,1)', 'fis(2,2)'
   ! write(12,*) z,  fis(1,1), fis(1,2), fis(2,1), fis(2,2)
   !write(12,'(4F18.5)') err_lnda,err_lnh,err_lnR
- open(13,file='output_Euclid_diff_14bins_S3.txt', status='unknown')
+ open(13,file='output_Fisher_bao_3_rms_s30k.txt', status='unknown')
  write(13,'(6F18.5)') z, err_lnda*1d2,err_lnh*1d2,err_lnR*1d2, beta
 !========================================================
   print'(1A15,1F9.5)','Err[lnDa](%) =',err_lnda*1d2
