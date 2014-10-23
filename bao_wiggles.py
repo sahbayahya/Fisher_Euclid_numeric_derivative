@@ -59,9 +59,11 @@ k_full, pk_full = np.genfromtxt("linear_matterpower_1.dat").T
 # Construct interpolation functions for smooth reference P(k), and BAO wiggles 
 # function, f_BAO(k)
 h= 0.67
+
 kref=np.linspace(2.15e-2/h, 4.5e-1/h, 10)
 pk_ref, fbao = spline_pk_nobao(k_full, pk_full, kref=[2.15e-2/h, 4.5e-1/h])
-print kref
+#print kref
+#print 'pk(0.2)=', pk_ref(0.2)*(1+fbao(0.2))
 test_sin = k_full**2
 data2 = np.concatenate((np.reshape(k_full,(len(k_full),1)),np.reshape(test_sin,(len(k_full),1))),axis=1)
 data = np.concatenate((np.reshape(k_full,(len(k_full),1)),np.reshape(fbao(k_full),(len(k_full),1)),np.reshape(pk_ref(k_full),(len(k_full),1))),axis=1)

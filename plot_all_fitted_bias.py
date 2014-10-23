@@ -3,6 +3,56 @@ import numpy as np
 import scipy.optimize as opt
 from scipy import *
 import matplotlib.pyplot as plt
+from matplotlib.collections import LineCollection
+from matplotlib.colors import ListedColormap, BoundaryNorm
+
+def make_segments(x, y):
+    '''
+    Create list of line segments from x and y coordinates, in the correct format for LineCollection:
+    an array of the form   numlines x (points per line) x 2 (x and y) array
+    '''
+
+    points = np.array([x, y]).T.reshape(-1, 1, 2)
+    segments = np.concatenate([points[:-1], points[1:]], axis=1)
+    
+    return segments
+
+# Interface to LineCollection:
+
+def colorline(x, y, z=None, cmap=plt.get_cmap('hot'), norm=plt.Normalize(0.0, 1.0), linewidth=3, alpha=1.0):
+    '''
+    Plot a colored line with coordinates x and y
+    Optionally specify colors in the array z
+    Optionally specify a colormap, a norm function and a line width
+    '''
+    
+    # Default colors equally spaced on [0,1]:
+    if z is None:
+        z = np.linspace(0.0, 1.0, len(x))
+           
+    # Special case if a single number:
+    if not hasattr(z, "__iter__"):  # to check for numerical input -- this is a hack
+        z = np.array([z])
+        
+    z = np.asarray(z)
+    
+    segments = make_segments(x, y)
+    lc = LineCollection(segments, array=z, cmap=cmap, norm=norm, linewidth=linewidth, alpha=alpha)
+    ax = plt.gca()
+    ax.add_collection(lc)
+    
+    return lc
+        
+    
+def clear_frame(ax=None): 
+    # Taken from a post by Tony S Yu
+    if ax is None: 
+        ax = plt.gca() 
+    ax.xaxis.set_visible(False) 
+    ax.yaxis.set_visible(False) 
+    for spine in ax.spines.itervalues(): 
+        spine.set_visible(False) 
+
 
 ''' '--------------------------------------------------------------------------------------------------------------------------'
 This function is the function we think it will be easy
@@ -61,7 +111,7 @@ bias_rms7_3 = sqrt(bias_rms7_3)
 rs7_3 = sqrt(rs7_3)
 rms10= sqrt(rms10)
 rs10= sqrt(r10)
-bias_rms23 = sqrt(bias_rms23)
+#bias_rms23 = sqrt(bias_rms23)
 bias_rm23 = sqrt(bias_rm23)
 rms40= sqrt(rms40)
 rms70 = sqrt(rms70)
@@ -92,7 +142,7 @@ y100=find_parameters(p0, z100, rms100 ,100, xrange)
 
 ''''--------------------------------------------------------------------------------------------------------------------------'
 plot the results
-'''
+'
 fig = plt.figure()
 ax = fig.add_subplot(1,1,1)
 p0,  = ax.plot(x0, bias_rms0, 'bo')
@@ -118,21 +168,64 @@ p40,  = ax.plot(xrange, y40, color='#808000', linewidth=2.0, linestyle="-")
 p70,  = ax.plot(xrange, y70, color='#008080', linewidth=2.0, linestyle="-")
 p100,  = ax.plot(xrange, y100, color='magenta', linewidth=2.0, linestyle="-")
 plt.legend([p01, p11, p31,p55, p6, p73, p10, p23, p40,  p70, p100] ,['$0 \mu$Jy','$1 \mu$Jy', '$ 3 \mu$Jy', '$ 5 \mu$Jy','$ 6 \mu$Jy','$ 7.3 \mu$Jy' ,'$ 10 \mu$Jy' ,  '$ 23\mu$Jy',  '$ 40 \mu$Jy' , '$70\mu$Jy'  ,'$100\mu$Jy'  ,'$150\mu$Jy',  '$200\mu$Jy'], loc='best', borderaxespad=0.)
+'''
+
+'''plot using cmap
+'''
+
+y = [y0, y1, y3, y5, y6, y7_3, y10, y23, y40, y70, y100]
+z= [bias_rms0,bias_rms1, bias_rms3, rms5, rms6, bias_rms7_3, rms10, bias_rm23, rms40, rms70, rms100]
+tic = [r'   $0 \mu$Jy',r'   $1 \mu$Jy', r'   $3 \mu$Jy', r'   $5 \mu$Jy',r'   $6 \mu$Jy',r'   $ 7.3 \mu$Jy' ,r'   $10 \mu$Jy' ,  r'   $23\mu$Jy',  r'   $40 \mu$Jy' , r'   $70\mu$Jy'  ,r'   $100\mu$Jy' ]
+p_tic =[0, 1, 3, 5, 6, 7.3,10, 23, 40, 70, 100]
+
+#=========plot
+fig, ax= plt.subplots()
+#ax.set_yscale('log')
+n = len(y)
+for i in range(n):
+    color = i / float(n)	
+    heatmap=colorline(xrange, y[i], color, cmap="RdBu" , linewidth=1.5)
+    
+
+#for j in range(n):
+#     cm = plt.cm.get_cmap('RdBu')  
+#     plt.scatter(x1, z[j], s=35, marker='o', cmap=cm)       
+#============== sidebar    
+cbar = plt.colorbar(heatmap, ticks=())
+cbar.ax.set_yticklabels(tic)
+for j, lab in enumerate(tic):
+    cbar.ax.text(.6, (1* j) /float(n), lab, va='center')
+
+ #========plot the data   
+ax.scatter(x0, bias_rms0,s= 35, marker= 'o', edgecolor ='#700f2c', facecolor='#700f2c')
+ax.scatter(x0, bias_rms1,  s= 35,marker ='o',edgecolor = '#9f1128', facecolor='#9f1128')
+ax.scatter(x0, bias_rms3, s=35, marker = 'o', edgecolor = '#b6495b', facecolor='#b6495b')
+ax.scatter(x5, rms5 ,s= 35,marker ='o',edgecolor = '#e0765d', facecolor='#e0765d')
+ax.scatter(x5, rms6 ,   s= 35,marker ='o',edgecolor = '#fbdccf', facecolor='#fbdccf')
+ax.scatter(x5, rs7_3 , s= 35,marker ='o',edgecolor = '#fcd7c2', facecolor='#fcd7c2')
+ax.scatter(z10, rms10, s= 35,marker ='o',edgecolor = '#fbf2ec', facecolor='#fbf2ec')
+ax.scatter(x23, bias_rm23 ,s= 35,marker ='o',edgecolor = '#edf3f7', facecolor='#edf3f7')
+ax.scatter(z40, rms40 , s= 35,marker ='o',edgecolor = '#c7e0ee', facecolor='#c7e0ee')
+ax.scatter(z70, rms70 , s= 35,marker ='o',edgecolor = '#96c7df', facecolor='#96c7df')
+ax.scatter(z100, rms100 , s= 35,marker ='o',edgecolor = '#6faed2', facecolor='#6faed2')
+
+
+
 ''''--------------------------------------------------------------------------------------------------------------------------'
 y axis
 '''
 plt.ylabel(r"$b(z)$", fontsize=15)
-plt.ylim(0., 10)
+plt.ylim(0., 5)
 ''''--------------------------------------------------------------------------------------------------------------------------'
 x axis
 ''' 
 plt.xlabel(r"$ {\rm redshift} (z)$", fontsize=15)
-xticks = arange(0, 3.3, 0.3)
-plt.xticks(xticks,[r'$0$', r'$0.3$',r'$0.6$', r'$0.9$',r'$1.2$',r'$1.5$',r'$1.8$', r'$2.1$',r'$2.4$',r'$2.7$', r'$3.0$' ])
-plt.xlim(0.,2.5)
+#xticks = arange(0, 3.3, 0.3)
+#plt.xticks(xticks,[r'$0$', r'$0.3$',r'$0.6$', r'$0.9$',r'$1.2$',r'$1.5$',r'$1.8$', r'$2.1$',r'$2.4$',r'$2.7$', r'$3.0$' ])
+plt.xlim(0.01,2.2)
 ''''--------------------------------------------------------------------------------------------------------------------------
 '''
-plt.savefig('fitted_bias.eps')
+plt.savefig('fitted_bias.pdf')
 plt.show()
 print '---------------------- Program excuted successfully--------------------'
 print '----------------------------------Thanks! -------------------------------------'

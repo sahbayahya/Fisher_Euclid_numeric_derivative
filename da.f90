@@ -41,23 +41,22 @@ contains
     INTEGER :: i
     DOUBLE PRECISION :: x,eta,tol=1d-7,rombint
     EXTERNAL one_over_h
-   ! ok0=1d0-om0-ode0-ob0
+    !ok0=1d0-om0-ode0
     do i=1,nw
        x = (i-nw)*0.01 ! x=ln(a)=-5.00,-4.99,...,0
        xa(i) = x
        eta=rombint(one_over_h,0d0,dexp(-x)-1d0,tol)
        if(abs(ok0)<1.d-5)then
-          za(i)=(c/H_0)*exp(x)*eta ! flat model
+          za(i)=2998d0*exp(x)*eta ! flat model
        else if(ok0>0)then
-          za(i)=(c/H_0)*exp(x)*sinh(sqrt(ok0)*eta)/sqrt(ok0)  ! open model
+          za(i)=2998d0*exp(x)*sinh(sqrt(ok0)*eta)/sqrt(ok0)  ! open model
        else
-          za(i)=(c/H_0)*exp(x)*sin(sqrt(-ok0)*eta)/sqrt(-ok0) ! closed model
+          za(i)=2998d0*exp(x)*sin(sqrt(-ok0)*eta)/sqrt(-ok0) ! closed model
        endif
     enddo
     CALL spline(xa,za,nw,1.d30,1.d30,z2a) ! evaluate z2a(i)=d^2[da(i)]/dy^2
     return
   END SUBROUTINE Setup_Da
-  
 END MODULE angular_distance
 !-----------------------------------------------------------------------------
 
@@ -77,7 +76,7 @@ DOUBLE PRECISION FUNCTION da(z) ! proper distance in units of h^-1 Mpc.
   hh=xa(jlo+1)-xa(jlo)
   a=(xa(jlo+1)-x)/hh
   b=(x-xa(jlo))/hh
-  da=(a*za(jlo)+b*za(jlo+1)+((a**3-a)*z2a(jlo)+(b**3-b)*z2a(jlo+1))*(hh**2)/6.)!/(H_0/100d0)
+  da=(a*za(jlo)+b*za(jlo+1)+((a**3-a)*z2a(jlo)+(b**3-b)*z2a(jlo+1))*(hh**2)/6.)
   return
 END FUNCTION Da
 !-----------------------------------------------------------------------------
@@ -92,9 +91,9 @@ DOUBLE PRECISION FUNCTION one_over_h(z)
   !ok0 = 0d0!1d0-om0-ode0-ob0
   fz =  (1d0 + z)**(3d0*(1d0 + w0+ w_a)) * exp(-3d0 * w_a *z/(1d0+ z))
   x=1d0/(1d0+z)
-wz = (w0 + w_a*z*x)
+  wz = (w0 + w_a*z*x)
 ! one_over_h = 1d0/sqrt((om0+ob0)/x**3d0+ok0/x**2d0+or0/x**4d0+ode0/x**(3d0*(1d0+wz)))
-!one_over_h = 1d0/sqrt((om0+ob0)/x**3d0+ok0/x**2d0+ ode0* fz)
- one_over_h = 1d0/sqrt((om0+ob0)/x**3d0+ok0/x**2d0+or0/x**4d0+ode0/x**(3d0+3d0*wz))
+one_over_h = 1d0/sqrt((om0+ob0)/x**3d0+ok0/x**2d0+ ode0* fz)
+! one_over_h = 1d0/sqrt((om0+ob0)/x**3d0+ok0/x**2d0+or0/x**4d0+ode0/x**(3d0+3d0*wz))
   return
 END FUNCTION one_over_h

@@ -54,7 +54,7 @@ use cosmo
   IMPLICIT none
   DOUBLE PRECISION, intent(IN) :: z
   DOUBLE PRECISION :: one_over_h,da
-  dvdz = (1d0+z)**2d0*da(z)**2d0*((c/H_0)*one_over_h(z))
+  dvdz = (1d0+z)**2d0*da(z)**2d0*(2998d0*one_over_h(z))
  !print*, 'da', da(z)
   return
 END FUNCTION dvdz

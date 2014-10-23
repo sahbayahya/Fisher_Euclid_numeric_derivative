@@ -1,5 +1,4 @@
-    Program PPolyn
-
+subroutine 
     implicit none
     real*8 x(129),y1(129),  pk_ref(129)
     real*8 dy1(129)
@@ -12,7 +11,7 @@
     open(unit =1,file='bao_wiggles_powerspectrum.txt',status = 'unknown',action = 'read',  iostat=status)
     If(status == 0) then 
     do while(.true.)
-       read(1,*,iostat=status) x(n1),  pk_ref(n1), y1(n1)
+       read(1,*,iostat=status) x(n1), y1(n1), pk_ref(n1)
       IF ( status < 0 ) EXIT
       n1 = n1+1
     enddo	
@@ -28,7 +27,7 @@
      enddo
      close(unit=222)  	  
 
-    end
+    end subroutine
 
 !    --------------------------------------------------------
 

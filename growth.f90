@@ -46,8 +46,8 @@ contains
        xa(i) = x
        if(i.eq.1)then
           xini = xa(i)
-          y(1)=1d0 ! initial condition, g=1, at z=-5.00 (z=147.413)
-          y(2)=0d0 ! initial condition, g'=1, at z=-5.00 (z=147.413)
+          y(1)=1d0 ! initial condition, g=1, at x=-5.00 (z=147.413)
+          y(2)=0d0 ! initial condition, g'=0, at x=-5.00 (z=147.413)
        else
           call dverk(2,fderiv,xini,y,x,tol,ind,c,2,work)
           xini = x
@@ -108,7 +108,7 @@ DOUBLE PRECISION FUNCTION g(z)
   a=(xa(jlo+1)-x)/hh
   b=(x-xa(jlo))/hh
  g=a*ga(jlo)+b*ga(jlo+1)+((a**3-a)*g2a(jlo)+(b**3-b)*g2a(jlo+1))*(hh**2)/6.  
-!g = 1d0
+!g =0.758d0
   return
 END FUNCTION g
 !-----------------------------------------------------------------------------

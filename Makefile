@@ -1,6 +1,6 @@
 FC	= gfortran
 FFLAGS	= -O3 
-OBJS	= cosmo.o da.o growth.o volume.o linearpk.o spline.o hunt.o dvert.o dverk.o  rombint.o 
+OBJS	= cosmo.o da.o growth.o volume.o linearpk.o spline.o hunt.o dvert.o dverk.o rombint.o
 .SUFFIXES: .f90
 .f90.o: 
 	$(FC) $(FFLAGS) -c $<
